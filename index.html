@@ -1,12 +1,17 @@
-    
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#111827">
+
   <title>Teacher Management Portal App</title>
+
   <link rel="manifest" href="./manifest.json">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <style>
     * {
@@ -48,26 +53,6 @@
 
     .app-content {
       padding: 25px 20px;
-    }
-
-    .welcome {
-      text-align: center;
-      padding: 40px 20px;
-    }
-
-    .welcome-icon {
-      font-size: 55px;
-      margin-bottom: 18px;
-    }
-
-    .welcome h2 {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-
-    .welcome p {
-      color: #6b7280;
-      line-height: 1.6;
     }
 
     .login-section {
@@ -115,7 +100,8 @@
       border-color: #111827;
     }
 
-    #loginButton {
+    #loginButton,
+    .modal-button {
       width: 100%;
       margin-top: 25px;
       padding: 14px;
@@ -128,11 +114,13 @@
       cursor: pointer;
     }
 
-    #loginButton:hover {
+    #loginButton:hover,
+    .modal-button:hover {
       opacity: 0.9;
     }
 
-    #loginMessage {
+    #loginMessage,
+    .modal-message {
       text-align: center;
       margin-top: 15px;
       font-size: 14px;
@@ -154,29 +142,114 @@
     .login-links a:hover {
       text-decoration: underline;
     }
+
+    /* MODAL */
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 9999;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      position: relative;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 15px;
+      border: none;
+      background: none;
+      font-size: 25px;
+      cursor: pointer;
+      color: #6b7280;
+    }
+
+    .modal-box h3 {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .modal-subtitle {
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .modal-box label {
+      display: block;
+      font-weight: 600;
+      font-size: 14px;
+      margin: 14px 0 7px;
+    }
+
+    .modal-box input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .modal-box input:focus {
+      border-color: #111827;
+    }
+
+    .secondary-button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      background: white;
+      color: #111827;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .secondary-button:hover {
+      background: #f3f4f6;
+    }
   </style>
 
-  <link rel="manifest" href="./manifest.json">
-
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+  <!-- SUPABASE -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <script>
-  const SUPABASE_URL = 'https://ifaptabszmvxgaltmrnh.supabase.co';
+    const SUPABASE_URL =
+      'https://ifaptabszmvxgaltmrnh.supabase.co';
 
-  const SUPABASE_PUBLISHABLE_KEY =
-    'sb_publishable_XWdNI0Jix2_TGMVOAfYjA_bADlqGpq';
+    const SUPABASE_PUBLISHABLE_KEY =
+      'sb_publishable_XWdNI0Jix2_TGMVOAfYjA_bADlqGpq';
 
-  const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-  );
-</script>
-  
-  </head>
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+  </script>
+</head>
 
 <body>
 
@@ -189,72 +262,579 @@
 
     <main class="app-content">
 
-<section class="login-section">
+      <!-- LOGIN -->
 
-  <div class="login-icon">👨‍🏫</div>
+      <section class="login-section">
 
-  <h2>Teacher Login</h2>
+        <div class="login-icon">👨‍🏫</div>
 
-  <p class="login-subtitle">
-    Sign in to your Teacher Management Portal
-  </p>
+        <h2>Teacher Login</h2>
 
-  <form id="loginForm">
+        <p class="login-subtitle">
+          Sign in to your Teacher Management Portal
+        </p>
 
-    <label for="loginEmail">Email Address</label>
+        <form id="loginForm">
 
-    <input
-      type="email"
-      id="loginEmail"
-      placeholder="Enter your email"
-      required
-    >
+          <label for="loginEmail">
+            Email Address
+          </label>
 
-    <label for="loginPassword">Password</label>
+          <input
+            type="email"
+            id="loginEmail"
+            placeholder="Enter your email"
+            required
+          >
 
-    <input
-      type="password"
-      id="loginPassword"
-      placeholder="Enter your password"
-      required
-    >
+          <label for="loginPassword">
+            Password
+          </label>
 
-    <button type="submit" id="loginButton">
-      Login
-    </button>
+          <input
+            type="password"
+            id="loginPassword"
+            placeholder="Enter your password"
+            required
+          >
 
-    <div class="login-links">
-      <a href="#" id="forgotPassword">Forgot Password?</a>
-      <a href="#" id="createAccount">Create Account</a>
-    </div>
+          <button
+            type="submit"
+            id="loginButton"
+          >
+            Login
+          </button>
 
-    <p id="loginMessage"></p>
+          <div class="login-links">
 
-  </form>
+            <a
+              href="#"
+              id="forgotPassword"
+            >
+              Forgot Password?
+            </a>
 
-</section>
+            <a
+              href="#"
+              id="createAccount"
+            >
+              Create Account
+            </a>
+
+          </div>
+
+          <p id="loginMessage"></p>
+
+        </form>
+
+      </section>
 
     </main>
 
   </div>
 
-<script>
-  console.log(
-    'Supabase connected:',
-    typeof supabaseClient !== 'undefined'
-  );
-</script>
 
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .catch(error => {
-          console.error('Service Worker registration failed:', error);
+  <!-- CREATE ACCOUNT MODAL -->
+
+  <div
+    class="modal"
+    id="createAccountModal"
+  >
+
+    <div class="modal-box">
+
+      <button
+        class="modal-close"
+        id="closeCreateAccount"
+        type="button"
+      >
+        ×
+      </button>
+
+      <h3>Create Account</h3>
+
+      <p class="modal-subtitle">
+        Create your teacher account to access the portal.
+      </p>
+
+      <form id="createAccountForm">
+
+        <label for="registerName">
+          Full Name
+        </label>
+
+        <input
+          type="text"
+          id="registerName"
+          placeholder="Enter your full name"
+          required
+        >
+
+        <label for="registerEmail">
+          Email Address
+        </label>
+
+        <input
+          type="email"
+          id="registerEmail"
+          placeholder="Enter your email"
+          required
+        >
+
+        <label for="registerPassword">
+          Password
+        </label>
+
+        <input
+          type="password"
+          id="registerPassword"
+          placeholder="Create a password"
+          minlength="6"
+          required
+        >
+
+        <label for="registerConfirmPassword">
+          Confirm Password
+        </label>
+
+        <input
+          type="password"
+          id="registerConfirmPassword"
+          placeholder="Confirm your password"
+          minlength="6"
+          required
+        >
+
+        <button
+          type="submit"
+          class="modal-button"
+        >
+          Create Account
+        </button>
+
+        <button
+          type="button"
+          class="secondary-button"
+          id="cancelCreateAccount"
+        >
+          Cancel
+        </button>
+
+        <p
+          class="modal-message"
+          id="registerMessage"
+        ></p>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- FORGOT PASSWORD MODAL -->
+
+  <div
+    class="modal"
+    id="forgotPasswordModal"
+  >
+
+    <div class="modal-box">
+
+      <button
+        class="modal-close"
+        id="closeForgotPassword"
+        type="button"
+      >
+        ×
+      </button>
+
+      <h3>Forgot Password?</h3>
+
+      <p class="modal-subtitle">
+        Enter your email address and we will send you a password reset link.
+      </p>
+
+      <form id="forgotPasswordForm">
+
+        <label for="resetEmail">
+          Email Address
+        </label>
+
+        <input
+          type="email"
+          id="resetEmail"
+          placeholder="Enter your email"
+          required
+        >
+
+        <button
+          type="submit"
+          class="modal-button"
+        >
+          Send Reset Link
+        </button>
+
+        <button
+          type="button"
+          class="secondary-button"
+          id="cancelForgotPassword"
+        >
+          Cancel
+        </button>
+
+        <p
+          class="modal-message"
+          id="resetMessage"
+        ></p>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- LOGIN SCRIPT -->
+
+  <script>
+
+    const loginForm =
+      document.getElementById('loginForm');
+
+    const loginMessage =
+      document.getElementById('loginMessage');
+
+    const createAccount =
+      document.getElementById('createAccount');
+
+    const forgotPassword =
+      document.getElementById('forgotPassword');
+
+    const createAccountModal =
+      document.getElementById('createAccountModal');
+
+    const forgotPasswordModal =
+      document.getElementById('forgotPasswordModal');
+
+
+    /* LOGIN */
+
+    loginForm.addEventListener('submit', async (event) => {
+
+      event.preventDefault();
+
+      const email =
+        document.getElementById('loginEmail').value.trim();
+
+      const password =
+        document.getElementById('loginPassword').value;
+
+      const loginButton =
+        document.getElementById('loginButton');
+
+      loginMessage.textContent = 'Signing in...';
+
+      loginButton.disabled = true;
+      loginButton.style.opacity = '0.6';
+
+      const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
         });
+
+      if (error) {
+
+        loginMessage.textContent =
+          error.message;
+
+        loginMessage.style.color = '#dc2626';
+
+        loginButton.disabled = false;
+        loginButton.style.opacity = '1';
+
+        return;
+      }
+
+      loginMessage.textContent =
+        'Login successful!';
+
+      loginMessage.style.color = '#16a34a';
+
+      /*
+        TEMPORARY:
+        Dashboard will be added next.
+      */
+
+      console.log(
+        'Logged-in user:',
+        data.user
+      );
+
     });
-  }
-</script>
+
+
+    /* OPEN CREATE ACCOUNT */
+
+    createAccount.addEventListener('click', (event) => {
+
+      event.preventDefault();
+
+      createAccountModal.classList.add('show');
+
+      document.getElementById(
+        'registerMessage'
+      ).textContent = '';
+
+    });
+
+
+    /* CLOSE CREATE ACCOUNT */
+
+    document.getElementById(
+      'closeCreateAccount'
+    ).addEventListener('click', () => {
+
+      createAccountModal.classList.remove('show');
+
+    });
+
+
+    document.getElementById(
+      'cancelCreateAccount'
+    ).addEventListener('click', () => {
+
+      createAccountModal.classList.remove('show');
+
+    });
+
+
+    /* CREATE ACCOUNT */
+
+    document.getElementById(
+      'createAccountForm'
+    ).addEventListener('submit', async (event) => {
+
+      event.preventDefault();
+
+      const fullName =
+        document.getElementById(
+          'registerName'
+        ).value.trim();
+
+      const email =
+        document.getElementById(
+          'registerEmail'
+        ).value.trim();
+
+      const password =
+        document.getElementById(
+          'registerPassword'
+        ).value;
+
+      const confirmPassword =
+        document.getElementById(
+          'registerConfirmPassword'
+        ).value;
+
+      const registerMessage =
+        document.getElementById(
+          'registerMessage'
+        );
+
+      if (password !== confirmPassword) {
+
+        registerMessage.textContent =
+          'Passwords do not match.';
+
+        registerMessage.style.color =
+          '#dc2626';
+
+        return;
+      }
+
+      registerMessage.textContent =
+        'Creating account...';
+
+      registerMessage.style.color =
+        '#111827';
+
+      const { data, error } =
+        await supabaseClient.auth.signUp({
+
+          email: email,
+
+          password: password,
+
+          options: {
+            data: {
+              full_name: fullName
+            }
+          }
+
+        });
+
+      if (error) {
+
+        registerMessage.textContent =
+          error.message;
+
+        registerMessage.style.color =
+          '#dc2626';
+
+        return;
+      }
+
+      console.log(
+        'Created account:',
+        data.user
+      );
+
+      registerMessage.textContent =
+        'Account created successfully. Please check your email if confirmation is required.';
+
+      registerMessage.style.color =
+        '#16a34a';
+
+    });
+
+
+    /* OPEN FORGOT PASSWORD */
+
+    forgotPassword.addEventListener('click', (event) => {
+
+      event.preventDefault();
+
+      forgotPasswordModal.classList.add('show');
+
+      document.getElementById(
+        'resetMessage'
+      ).textContent = '';
+
+    });
+
+
+    /* CLOSE FORGOT PASSWORD */
+
+    document.getElementById(
+      'closeForgotPassword'
+    ).addEventListener('click', () => {
+
+      forgotPasswordModal.classList.remove('show');
+
+    });
+
+
+    document.getElementById(
+      'cancelForgotPassword'
+    ).addEventListener('click', () => {
+
+      forgotPasswordModal.classList.remove('show');
+
+    });
+
+
+    /* RESET PASSWORD EMAIL */
+
+    document.getElementById(
+      'forgotPasswordForm'
+    ).addEventListener('submit', async (event) => {
+
+      event.preventDefault();
+
+      const email =
+        document.getElementById(
+          'resetEmail'
+        ).value.trim();
+
+      const resetMessage =
+        document.getElementById(
+          'resetMessage'
+        );
+
+      resetMessage.textContent =
+        'Sending reset link...';
+
+      resetMessage.style.color =
+        '#111827';
+
+      const redirectUrl =
+        window.location.origin +
+        window.location.pathname;
+
+      const { error } =
+        await supabaseClient.auth.resetPasswordForEmail(
+          email,
+          {
+            redirectTo: redirectUrl
+          }
+        );
+
+      if (error) {
+
+        resetMessage.textContent =
+          error.message;
+
+        resetMessage.style.color =
+          '#dc2626';
+
+        return;
+      }
+
+      resetMessage.textContent =
+        'Password reset link sent. Please check your email.';
+
+      resetMessage.style.color =
+        '#16a34a';
+
+    });
+
+
+    /* CLOSE MODALS WHEN CLICKING OUTSIDE */
+
+    window.addEventListener('click', (event) => {
+
+      if (event.target === createAccountModal) {
+
+        createAccountModal.classList.remove('show');
+
+      }
+
+      if (event.target === forgotPasswordModal) {
+
+        forgotPasswordModal.classList.remove('show');
+
+      }
+
+    });
+
+  </script>
+
+
+  <!-- SERVICE WORKER -->
+
+  <script>
+
+    if ('serviceWorker' in navigator) {
+
+      window.addEventListener('load', () => {
+
+        navigator.serviceWorker.register('./sw.js')
+          .catch(error => {
+
+            console.error(
+              'Service Worker registration failed:',
+              error
+            );
+
+          });
+
+      });
+
+    }
+
+  </script>
 
 </body>
 </html>
