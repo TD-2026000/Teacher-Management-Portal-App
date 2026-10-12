@@ -1,4 +1,4 @@
-const CACHE_NAME = 'teacher-management-portal-v1';
+const CACHE_NAME = 'teacher-management-portal-v2';
 
 const APP_FILES = [
   './',
